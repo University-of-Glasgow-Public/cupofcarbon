@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="mt-1 p-5 bg-secondary-subtle text-black rounded">
+  <div class="row div-top mb-4 justify-content-center">
+      <br>
+      <div class="d-flex position-relative">
+        <img src="{{ url_for('static', filename='site_images/coc1.jpg') }}" class="img-fluid" alt="Left image">
+
+     </div>
+      <br>
+      <p> </p>
+      <h3>Cup of Carbon: Estimating the Dissolved Organic Carbon (DOC) concentration of water samples with your smartphone </h3>
+      <br>
+      <p><b>Cup of Carbon</b> is a smartphone-based method for estimating <b>Dissolved Organic Carbon (DOC)</b> concentration
+        in water from its colour. DOC consists of dissolved organic material from plants and animals that has been
+        broken down by microorganisms. DOC concentration is reported as <b>mg/L (milligrams per litre)</b>. High DOC
+        concentrations tend to give water a darker colour. Water with high DOC concentrations often flows from
+        catchments with peat-rich soils, and DOC concentration may be influenced by catchment soil type, recent
+        weather (e.g. rain or drought) or disturbance of peat soils.  </p>
+      <p>The Cup of Carbon web app estimates DOC concentration using photographs taken of water samples in a <b>white
+        mug</b> against a <b>white background</b>. The method was developed and calibrated using 117 water samples
+        photographed with 8 smartphone models. In testing, 95% of measurements were within ±12.3 mg/L of
+        laboratory DOC values (Muir et al., 2025).</p>
+      <div class="d-flex justify-content-center align-items-center">
+        <img src="{{ url_for('static', filename='site_images/coc2.jpg') }}">
+
+      </div>
+      <h4>Equipment</h4>
+      <ul>
+          <li>White-background Cup of Carbon sheet (printed and laminated or placed in a clear plastic sleeve)</li>
+          <li>White mug (~300 mL volume; straight-sided; 7-9 cm internal depth</li>
+          <li>Clipboard or other flat surface</li>
+          <li>Smartphone or digital camera</li>
+          <li>Cup of Carbon account</li>
+      </ul>
+      <div class="justify-content-center">
+        <img src="{{ url_for('static', filename='site_images/coc4.jpg') }}">
+     </div>
+      <p><br></p>
+      <h4>Method</h4>
+      <ol type="1">
+          <li>Print and laminate the <a href="{{ url_for('static', filename='download/CofC_SampleSheet.pdf') }}" download>Cup of Carbon background sheet</a></li>
+          <li>Fill a suitable white mug with the water sample.</li>
+          <li>Place the mug on the background sheet with the handle aligned as indicated.</li>
+          <li>Keep the sample in <b>even shade</b> (avoid direct sunlight and glare).</li>
+          <li>Log into <a href="https://cupofcarbon.gla.ac.uk">cupofcarbon.gla.ac.uk</a> and select <b>“Upload”</b></li>
+          <li>Upload a photograph the mug from approximately <b>30-40 cm above</b>, ensuring the entire background sheet is
+            visible in the image, then click <b>“Submit”</b>.</li>
+          <li>If prompted, record the sampling location (GPS or map) and any notes (e.g. weather, sampling time).</li>
+      </ol>
+      <h4>Tips for Best Results</h4>
+      <ul>
+          <li>Take photographs in <b>shade or under cloudy conditions.</b></li>
+          <li>Place the background sheet on a <b>flat surface</b> to reduce wrinkles and reflections.</li>
+          <li>Take <b>3-5 replicate photographs</b> and average the DOC results for improved accuracy.</li>
+          <li>The method performs best for <b>0-35 mg/L DOC</b>.</li>
+          <li>For very dark samples, dilute with colourless water before analysis.</li>
+          <li>Samples containing large amounts of suspended sediment or peat should be filtered, as the method estimates
+                <b>dissolved</b> organic carbon only (not particulate organic carbon </li>
+      </ul>
+      <br>
+      <div class="d-flex justify-content-between align-items-center">
+        <a href="https://doi.org/10.1039/D5AN00738K"><img src="{{ url_for('static', filename='site_images/coc5.jpg') }}" class="img-fluid"></a>
+        <img src="{{ url_for('static', filename='site_images/coc6.png') }}" class="img-fluid">
+      </div>
+  </div>
+</div>
+{% endblock content %}

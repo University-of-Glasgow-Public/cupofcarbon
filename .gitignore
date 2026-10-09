@@ -1,0 +1,10 @@
+.venv/
+colorimetry/static/uploaded_images/
+__pycache__/
+*.pyc
+*.pycsite/
+site/
+.env
+
+__pycache__/
+*.pyc

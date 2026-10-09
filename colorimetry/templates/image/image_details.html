@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>Location data not extracted from image. Please select location and add any additional notes</h3>
+
+<div id="map"></div>
+
+<div class="content-section">
+    <form method="POST" action="" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+        <fieldset class="form-group">
+            <legend class="border-bottom mb-4">{{ legend }}</legend>
+            <div class="form-group">
+                {{ form.latitude.label(class="form-control-label") }}
+                {% if form.latitude.errors %}
+                    {{ form.latitude(class="form-control form-control-lg is-invalid", id="lat") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.latitude.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.latitude(class="form-control form-control-lg", id="lat") }}
+                {% endif %}
+            </div>
+            <div class="form-group">
+                {{ form.longitude.label(class="form-control-label") }}
+                {% if form.longitude.errors %}
+                    {{ form.longitude(class="form-control form-control-lg is-invalid", id="lng") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.longitude.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.longitude(class="form-control form-control-lg", id="lng") }}
+                {% endif %}
+            </div>
+            <div class="form-group">
+                {{ form.notes.label(class="form-control-label") }}
+                {% if form.notes.errors %}
+                    {{ form.notes(class="form-control form-control-lg is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.notes.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.notes(class="form-control form-control-lg") }}
+                {% endif %}
+            </div>
+        </fieldset>
+        <div class="form-group">
+            {{ form.submit(type="submit") }}
+        </div>
+    </form>
+</div>
+<script>
+// Glasgow fallback location
+var glasgow = [55.8642, -4.2518];
+
+// Initialize map
+var map = L.map('map').setView(glasgow, 13);
+
+// Add tile layer
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; OpenStreetMap contributors'
+}).addTo(map);
+
+// Attempt to locate the user
+map.locate({
+    setView: true,
+    maxZoom: 13
+});
+
+var marker;
+
+// If location fails, stay centred on Glasgow
+map.on('locationerror', function (e) {
+    console.log('Location unavailable:', e.message);
+    map.setView(glasgow, 13);
+});
+
+// When the user clicks the map
+map.on('click', function (e) {
+
+    var lat = e.latlng.lat;
+    var lng = e.latlng.lng;
+
+    // Update WTForms fields
+    document.getElementById('lat').value = lat.toFixed(6);
+    document.getElementById('lng').value = lng.toFixed(6);
+
+    // Add or move the marker
+    if (marker) {
+        marker.setLatLng(e.latlng);
+    } else {
+        marker = L.marker(e.latlng).addTo(map);
+    }
+});
+</script>
+
+{% endblock content %}

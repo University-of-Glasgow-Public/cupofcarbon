@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="mt-1 p-5 bg-secondary-subtle text-black rounded">
+    <form action="{{ url_for('data.results') }}" method="get">
+
+
+        <div class="form-group row">
+            <label for="site" class="col-sm-2 col-form-label">Site:</label>
+            <div class="col-sm-10">
+                <input list="sites" id="site" name="site" class="form-control" placeholder="Start typing...">
+                <datalist id="sites">
+                    {% for site in sites %}
+                    <option value="{{ site }}"></option>
+                    {% endfor %}
+                </datalist>
+            </div>
+        </div>
+
+
+        <!-- Date From -->
+        <div class="form-group row mt-4">
+            <label for="date_from" class="col-sm-2 col-form-label">Added After:</label>
+            <div class="col-sm-10">
+                <input type="date" id="date_from" name="date_from" class="form-control">
+            </div>
+        </div>
+
+        <!-- Date To -->
+        <div class="form-group row mt-4">
+            <label for="date_to" class="col-sm-2 col-form-label">Added Before:</label>
+            <div class="col-sm-10">
+                <input type="date" id="date_to" name="date_to" class="form-control">
+            </div>
+        </div>
+
+        <!-- Submit -->
+        <div class="row mt-4">
+            <div class="col-sm-10 offset-sm-2">
+                <input type="submit" value="Search" class="btn btn-primary">
+            </div>
+        </div>
+
+    </form>
+</div>
+
+{% endblock content %}

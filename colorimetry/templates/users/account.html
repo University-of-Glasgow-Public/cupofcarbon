@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block content %}
+<p>Click <a href="{{ url_for('users.logout') }}">here</a> to logout</p>
+<p><a href="{{ url_for('data.user_download') }}" class="link-color">Download my sample data</a></p>
+<div class="mt-1 p-2 bg-secondary-subtle text-black rounded">
+  <div class="row div-top mb-4 justify-content-center">
+      <br>
+      <h4>My recent samples</h4>
+      <div id="map" style="height: 500px; width: 500px;"></div>
+      <div class="table-responsive">
+          <table class="table">
+              <thead>
+                <tr>
+                    <th scope="col">User</th>
+                    <th scope="col">DOC</th>
+                    <th scope="col">Date</th>
+                    <th scope="col">Link</th>
+                    <th scope="col">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for sample in user_samples %}
+                <tr>
+                    <td>{{ sample.properties.user }}</td>
+                    <td>{{ sample.properties.doc }}</td>
+                    <td>{{ sample.properties.submission_timestamp.strftime("%Y-%m-%d %H:%M:%S") }}</td>
+                    <td style="text-align: center"><a href="{{ url_for('data.sample', sample_id=sample._id) }}">View</a></td>
+                    {% if sample.properties.deleted %}
+                        <td style="text-align: center"><a href="{{ url_for('data.remove', sample_id=sample._id) }}">Remove</a></td>
+                    {% else %}
+                        <td style="text-align: center"><a href="{{ url_for('data.delete', sample_id=sample._id) }}">Delete</a></td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+              </tbody>
+          </table>
+      </div>
+  </div>
+</div>
+<script>
+    const map = L.map('map').setView([51.4826, 0.0077], 10);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19
+    }).addTo(map);
+
+    const clusterGroup = L.markerClusterGroup();
+
+    const samples = {{ user_samples | tojson }};
+
+    samples.forEach(s => {
+        const lon = parseFloat(s.geometry.coordinates[0]);
+        const lat = parseFloat(s.geometry.coordinates[1]);
+
+        if (isNaN(lat) || isNaN(lon)) {
+            console.warn("Skipping invalid coords", s);
+            return;
+        }
+
+        const marker = L.marker([lat, lon], { sample: s });
+
+        const popupHtml = `
+            <strong>${s.properties.user}</strong><br>
+            DOC: ${s.properties.doc}<br>
+            <a href="${s.properties.link}">View Sample</a>
+        `;
+
+        marker.bindPopup(popupHtml);
+        clusterGroup.addLayer(marker);
+    });
+
+    map.addLayer(clusterGroup);
+
+
+    if (clusterGroup.getLayers().length > 0) {
+        map.fitBounds(clusterGroup.getBounds());
+    }
+
+</script>
+{% endblock content %}

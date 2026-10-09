@@ -1,0 +1,16 @@
+version: '3.9'
+
+services:
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mongo
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/colorimetry_db
+
+  mongo:
+    image: mongo:7
+    ports:
+      - "27017:27017"

@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="mt-1 p-5 bg-secondary-subtle text-black rounded">
+  <div class="row div-top mb-4 justify-content-center">
+    <h3 class="mb-5">Add new site</h3>
+
+    <div class="mb-2" id="map" style="width: 500px; height: 500px;"></div>
+
+    <!-- Action buttons -->
+    <div class="mb-4">
+      <button id="undo-btn" class="btn btn-outline-secondary btn-sm" disabled>Undo last point</button>
+      <button id="clear-btn" class="btn btn-outline-danger btn-sm">Clear all</button>
+    </div>
+
+    <!-- Turf.js (monobundle). Keep only one copy on the page. -->
+    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
+
+    <script>
+      // --- Map setup (unchanged) ---
+      const map = L.map('map').setView([57.3, -5], 6);
+      const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 19,
+          attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+      }).addTo(map);
+
+      // --- State ---
+      let markers = [];              // Leaflet markers
+      let coords = [];               // Points as [lng, lat] in clicked order
+      let drawnLine = null;          // L.Polyline during drawing
+      let drawnPolygon = null;       // L.Polygon after validation (dblclick)
+      let closingLine = null;
+      const undoBtn = document.getElementById('undo-btn');
+      const clearBtn = document.getElementById('clear-btn');
+
+      // --- Helpers ---
+      function updateFormFieldsFromCoords() {
+        // Recompute lat/lng strings from coords so undo stays correct
+        const lats = coords.map(([lng, lat]) => lat).join(',');
+        const lngs = coords.map(([lng, lat]) => lng).join(',');
+        document.getElementById('latitude').value = lats;
+        document.getElementById('longitude').value = lngs;
+
+        // Enable/disable undo based on count
+        undoBtn.disabled = coords.length === 0;
+      }
+
+      function getClosedRing() {
+        if (coords.length < 3) return null;
+        const ring = [...coords];
+        const first = ring[0];
+        const last = ring[ring.length - 1];
+        const isClosed = first[0] === last[0] && first[1] === last[1];
+        if (!isClosed) ring.push(first);
+        return ring;
+      }
+
+      function validatePolygon() {
+        const ring = getClosedRing();
+        if (!ring) {
+          return { valid: false, reason: 'Add at least 3 points to form a polygon.' };
+        }
+        if (ring.length < 4) {
+          return { valid: false, reason: 'A polygon must have at least 4 points (including the closing point).' };
+        }
+
+        const polygon = {
+          type: 'Feature',
+          geometry: { type: 'Polygon', coordinates: [ring] },
+          properties: {}
+        };
+
+        // Detect self-intersections
+        const k = turf.kinks(polygon);
+        if (k && k.features && k.features.length > 0) {
+          return { valid: false, reason: 'Invalid polygon: edges intersect. Please adjust your points.' };
+        }
+
+        // Optional: ensure non-degenerate area
+        const area = turf.area(polygon);
+        if (!area || area < 1e-8) {
+          return { valid: false, reason: 'Polygon area is zero or too small.' };
+        }
+
+        return { valid: true, polygon };
+      }
+
+      function redrawLineAndPolygon() {
+            // Remove previous overlays
+            if (drawnLine) { map.removeLayer(drawnLine); drawnLine = null; }
+            if (closingLine) { map.removeLayer(closingLine); closingLine = null; }
+            if (drawnPolygon) { map.removeLayer(drawnPolygon); drawnPolygon = null; }
+
+            if (coords.length > 1) {
+                const latLngs = coords.map(([lng, lat]) => [lat, lng]);
+
+                // Standard dashed line between points
+                drawnLine = L.polyline(latLngs, {
+                    color: '#007bff',
+                    weight: 2,
+                    dashArray: '6,6'
+                }).addTo(map);
+
+                // Draw preview "closing" dashed line:
+                // last point -> first point
+                const first = latLngs[0];
+                const last = latLngs[latLngs.length - 1];
+
+                closingLine = L.polyline([last, first], {
+                    color: '#007bff',
+                    weight: 2,
+                    dashArray: '6,6',
+                    opacity: 0.5   // slightly lighter for clarity
+                }).addTo(map);
+            }
+        }
+
+
+      function drawFinalPolygon() {
+        const ring = getClosedRing();
+        if (!ring) return;
+
+        const latLngs = ring.map(([lng, lat]) => [lat, lng]);
+        drawnPolygon = L.polygon(latLngs, { color: '#28a745', weight: 2, fillOpacity: 0.25 }).addTo(map);
+      }
+
+      function onMapClick(e) {
+        // Add a marker
+        const m = L.marker(e.latlng).addTo(map);
+        markers.push(m);
+
+        // Record as [lng, lat]
+        coords.push([e.latlng.lng, e.latlng.lat]);
+
+        // Update UI
+        updateFormFieldsFromCoords();
+        redrawLineAndPolygon();
+      }
+
+      function undoLastPoint() {
+        if (coords.length === 0) return;
+
+        // Remove last marker from map
+        const last = markers.pop();
+        if (last) map.removeLayer(last);
+
+        // Remove last coordinate
+        coords.pop();
+
+        // Redraw overlays and update inputs
+        redrawLineAndPolygon();
+        updateFormFieldsFromCoords();
+      }
+
+      function resetAll() {
+        // Clear coords
+        coords = [];
+
+        // Remove markers
+        markers.forEach(m => map.removeLayer(m));
+        markers = [];
+
+        // Remove overlays
+        if (drawnLine) { map.removeLayer(drawnLine); drawnLine = null; }
+        if (drawnPolygon) { map.removeLayer(drawnPolygon); drawnPolygon = null; }
+
+        // Clear form
+        document.getElementById('latitude').value = '';
+        document.getElementById('longitude').value = '';
+
+        undoBtn.disabled = true;
+      }
+
+      // --- Event wiring ---
+      map.on('click', onMapClick);
+
+      // Double-click: try to validate and draw filled polygon
+      map.on('dblclick', function () {
+        const result = validatePolygon();
+        if (!result.valid) {
+          alert(result.reason);
+          return;
+        }
+        drawFinalPolygon();
+      });
+
+      undoBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        undoLastPoint();
+      });
+
+      clearBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        resetAll();
+      });
+
+      // Final validation on submit (prevents MongoDB errors)
+      document.addEventListener('DOMContentLoaded', () => {
+        const form = document.querySelector('form');
+        form.addEventListener('submit', (evt) => {
+          const result = validatePolygon();
+          if (!result.valid) {
+            evt.preventDefault();
+            alert(result.reason);
+            return false;
+          }
+          // Ensure closed ring goes to backend if you need it:
+          const ring = getClosedRing();
+          const lats = ring.map(([lng, lat]) => lat).join(',');
+          const lngs = ring.map(([lng, lat]) => lng).join(',');
+          document.getElementById('latitude').value = lats;
+          document.getElementById('longitude').value = lngs;
+        });
+      });
+    </script>
+
+    <h4>Select points on the map above to mark the perimeter of the site you wish to add.</h4>
+
+    <form action="{{ url_for('data.add_site') }}" method="POST">
+      <p>Name of site: <input aria-label="Name of site" type="text" name="Name" /></p>
+      <p>
+        Longitude <input aria-label="Longitude" type="text" id="longitude" name="Longitude" value=""/>
+        Latitude <input aria-label="Latitude" type="text" id="latitude" name="Latitude" />
+      </p>
+      <p><input type="submit" value="submit" /></p>
+    </form>
+  </div>
+</div>
+{% endblock content %}

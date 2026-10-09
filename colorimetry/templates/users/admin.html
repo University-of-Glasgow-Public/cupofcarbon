@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="mt-1 p-2 bg-secondary-subtle text-black rounded">
+    <div class="row div-top mb-4 justify-content-center">
+        <h4>Remove site</h4>
+        <p><br></p>
+        <form action="{{ url_for('data.remove_site') }}" method="GET">
+            <label for="dropdown">Choose a site:</label>
+            <select name="dropdown" id="dropdown">
+                {% for site in sites %}
+                    <option value="{{ site }}"
+                        {% if site == selected %}selected{% endif %}>
+                        {{ site }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <button type="submit">Remove</button>
+        </form>
+
+        {% if selected %}
+            <p>You selected: {{ selected }}</p>
+        {% endif %}
+        <p><br></p>
+        <h4>Remove samples</h4>
+        <div class="table-responsive">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th scope="col">User</th>
+                  <th scope="col">DOC</th>
+                  <th scope="col">Date</th>
+                  <th scope="col">Link</th>
+                  {% if current_user.role == "admin" %}
+                        <th scope="col">Action</th>
+                  {% endif %}
+                </tr>
+              </thead>
+              <tbody>
+                {% for sample in samples %}
+                <tr>
+                  <td>{{ sample.properties.user }}</td>
+                  <td>{{ sample.properties.doc }}</td>
+                  <td>{{ sample.properties.submission_timestamp.strftime("%Y-%m-%d %H:%M:%S") }}</td>
+                  <td><a href="{{ url_for('data.sample', sample_id=sample._id) }}">View</a></td>
+                  {% if current_user.role == "admin" %}
+                        <td style="text-align: center"><a href="{{ url_for('data.remove', sample_id=sample._id) }}">Remove</a></td>
+                  {% endif %}
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination controls -->
+        <nav aria-label="Samples pagination">
+          <ul class="pagination justify-content-center">
+            <li class="page-item {% if page <= 1 %}disabled{% endif %}">
+              <a class="page-link" href="{{ url_for('data.batch', page=1) }}">« First</a>
+            </li>
+            <li class="page-item {% if page <= 1 %}disabled{% endif %}">
+              <a class="page-link" href="{{ url_for('data.batch', page=page-1) }}">‹ Prev</a>
+            </li>
+
+            {# Optional: show a small window of pages around the current #}
+            {% set start = [1, page-2]|max %}
+            {% set end = [total_pages, page+2]|min %}
+            {% for p in range(start, end + 1) %}
+              <li class="page-item {% if p == page %}active{% endif %}">
+                <a class="page-link" href="{{ url_for('data.batch', page=p) }}">{{ p }}</a>
+              </li>
+            {% endfor %}
+
+            <li class="page-item {% if page >= total_pages %}disabled{% endif %}">
+              <a class="page-link" href="{{ url_for('data.batch', page=page+1) }}">Next ›</a>
+            </li>
+            <li class="page-item {% if page >= total_pages %}disabled{% endif %}">
+              <a class="page-link" href="{{ url_for('data.batch', page=total_pages) }}">Last »</a>
+            </li>
+          </ul>
+        </nav>
+        <br>
+        <p><a href="{{ url_for('data.batch_download') }}">Download all sample data</a></p>
+    </div>
+</div>
+{% endblock content %}

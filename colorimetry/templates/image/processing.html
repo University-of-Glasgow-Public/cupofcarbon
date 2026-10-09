@@ -1,0 +1,23 @@
+<h1>Processing your image...</h1>
+<h2>Please wait, this may take a few seconds.</h2>
+
+<script>
+const jobId = "{{ job_id }}";
+
+async function checkStatus() {
+    const res = await fetch(`/job_status/${jobId}`);
+    const data = await res.json();
+
+    if (data.status === "done") {
+        const url = `/${data.redirect_route.split('.').pop()}/${data.result_id}`;
+        window.location.href = url;
+    } else if (data.status === "failed") {
+        alert("Processing failed: " + data.error);
+        window.location.href = "/upload_image";
+    } else {
+        setTimeout(checkStatus, 2000);
+    }
+}
+
+checkStatus();
+</script>

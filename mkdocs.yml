@@ -1,0 +1,10 @@
+site_name: Cup of Carbon
+site_description: User and developer documentation for the Cup of Carbon web app.
+
+theme:
+  name: material
+
+nav:
+  - Home: index.md
+  - User guide: user-guide.md
+  - Developer guide: developer-guide.md

@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="mt-1 p-3 bg-secondary-subtle text-black rounded">
+  <div class="row div-top mb-4 justify-content-center">
+      <h3>Cup of Carbon: Estimating the Dissolved Organic Carbon (DOC) concentration of water samples with your smartphone </h3>
+      <p><br></p>
+      <h4>Community samples</h4>
+      <br>
+      <div id="map" style="height: 500px; width: 500px;"></div>
+      <br>
+      <div class="table-responsive">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th scope="col">User</th>
+                  <th scope="col">DOC</th>
+                  <th scope="col">Date</th>
+                  <th scope="col">Link</th>
+                  {% if current_user.role == "admin" %}
+                        <th scope="col">Action</th>
+                  {% endif %}
+                </tr>
+              </thead>
+              <tbody>
+                {% for sample in samples %}
+                <tr>
+                  <td>{{ sample.properties.user }}</td>
+                  <td>{{ sample.properties.doc }}</td>
+                  <td>{{ sample.properties.submission_timestamp.strftime("%Y-%m-%d %H:%M:%S") }}</td>
+                  <td><a href="{{ url_for('data.sample', sample_id=sample._id) }}">View</a></td>
+                   {% if current_user.role == "admin" %}
+                    <td style="text-align: center"><a href="{{ url_for('data.delete', sample_id=sample._id) }}">Delete</a></td>
+                   {% endif %}
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination controls -->
+        <nav aria-label="Samples pagination">
+          <ul class="pagination justify-content-center">
+            <li class="page-item {% if page <= 1 %}disabled{% endif %}">
+              <a class="page-link" href="{{ url_for('main.home', page=1) }}">« First</a>
+            </li>
+            <li class="page-item {% if page <= 1 %}disabled{% endif %}">
+              <a class="page-link" href="{{ url_for('main.home', page=page-1) }}">‹ Prev</a>
+            </li>
+
+            {# Optional: show a small window of pages around the current #}
+            {% set start = [1, page-2]|max %}
+            {% set end = [total_pages, page+2]|min %}
+            {% for p in range(start, end + 1) %}
+              <li class="page-item {% if p == page %}active{% endif %}">
+                <a class="page-link" href="{{ url_for('main.home', page=p) }}">{{ p }}</a>
+              </li>
+            {% endfor %}
+
+            <li class="page-item {% if page >= total_pages %}disabled{% endif %}">
+              <a class="page-link" href="{{ url_for('main.home', page=page+1) }}">Next ›</a>
+            </li>
+            <li class="page-item {% if page >= total_pages %}disabled{% endif %}">
+              <a class="page-link" href="{{ url_for('main.home', page=total_pages) }}">Last »</a>
+            </li>
+          </ul>
+        </nav>
+
+
+  </div>
+</div>
+<script>
+    const map = L.map('map').setView([51.4826, 0.0077], 10);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    const clusterGroup = L.markerClusterGroup();
+
+    const samples = {{ map_samples | tojson }};
+
+    samples.forEach(s => {
+        const lon = parseFloat(s.geometry.coordinates[0]);
+        const lat = parseFloat(s.geometry.coordinates[1]);
+
+        if (isNaN(lat) || isNaN(lon)) {
+            console.warn("Skipping invalid coords", s);
+            return;
+        }
+
+        const doc = parseFloat(s.properties.doc);
+
+        // Colour scale: white → dark brown in 3-unit DOC bands
+        const brownScale = [
+            "#ffffff", // 0-3
+            "#fed778", // 3-6
+            "#e48525", // 6-9
+            "#b44c0f", // 9-12
+            "#872201", // 12-15
+            "#5e0a00", // 15-18
+            "#3e0609", // 18-21
+            "#1d0204"  // 21+
+        ];
+
+        // Determine colour band
+        const colourIndex = Math.min(
+            Math.max(Math.floor(doc / 3), 0),
+            brownScale.length - 1
+        );
+
+        const markerColour = brownScale[colourIndex];
+
+        const marker = L.circleMarker([lat, lon], {
+            radius: 8,
+            fillColor: markerColour,
+            color: "#e61a0b",
+            weight: 1,
+            opacity: 1,
+            fillOpacity: 0.8
+        });
+
+        const popupHtml = `
+            <strong>${s.properties.user}</strong><br>
+            DOC: ${doc} mg/L<br>
+            <a href="${s.properties.link}">
+                View Sample
+            </a>
+        `;
+
+        marker.bindPopup(popupHtml);
+
+        clusterGroup.addLayer(marker);
+    });
+
+    map.addLayer(clusterGroup);
+
+    if (clusterGroup.getLayers().length > 0) {
+        map.fitBounds(clusterGroup.getBounds());
+    }
+</script>
+
+
+
+
+{% endblock content %}

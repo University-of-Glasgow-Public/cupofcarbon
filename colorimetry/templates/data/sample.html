@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block content %}
+
+    <div class="container mt-4">
+        <h3>Sample Location</h3>
+        <div id="map"></div>
+        <div id="main" class="wrapper">
+            <h3>Sample Details</h3>
+            <p>
+                <table class="table table-striped">
+                    <tbody>
+                        <tr>
+                            <td width="20%">Assay</td>
+                            <td>{{ sample.properties.assay }}</td>
+                        </tr>
+                        <tr>
+                            <td width="20%">DOC</td>
+                            <td>{{ sample.properties.doc }}</td>
+                        </tr>
+                        <tr>
+                            <td width="20%">Submitted by</td>
+                            <td>{{ sample.properties.user }}</td>
+                        </tr>
+                        <tr>
+                            <td width="20%">Notes</td>
+                            <td>{{ sample.properties.notes }}</td>
+                        </tr>
+                        <tr>
+                            <td width="20%">Submission date</td>
+                            <td>{{ sample.properties.submission_timestamp.strftime("%Y-%m-%d %H:%M:%S") }}</td>
+                        </tr>
+                        <tr>
+                            <td width="20%">Date taken</td>
+                            <td>{{ sample.properties.observations.0.image_timestamp }}</td>
+                        </tr>
+                        <tr>
+                            <td width="20%">Cup blue</td>
+                            <td>{{ sample.properties.observations.0.cup_blue }}</td>
+                        </tr>
+                        <tr>
+                            <td width="20%">Cup green</td>
+                            <td>{{ sample.properties.observations.0.cup_green }}</td>
+                        </tr>
+                        <tr>
+                            <td width="20%">Cup red</td>
+                            <td>{{ sample.properties.observations.0.cup_red }}</td>
+                        </tr>
+                        <tr>
+                            <td width="20%">Background blue</td>
+                            <td>{{ sample.properties.observations.0.bgd_blue }}</td>
+                        </tr>
+                        <tr>
+                            <td width="20%">Background green</td>
+                            <td>{{ sample.properties.observations.0.bgd_green }}</td>
+                        </tr>
+                        <tr>
+                            <td width="20%">Background red</td>
+                            <td>{{ sample.properties.observations.0.bgd_red }}</td>
+                        </tr>
+                    </tbody>
+
+                </table>
+            </p>
+        </div>
+        <div style="padding-bottom:20px">
+            <h3>Sample Image</h3>
+            <img src="{{ url_for('static', filename='uploaded_images/'~sample.properties.observations.0.filename) }}" width="20%" height="20%" alt="">
+        </div>
+    </div>
+<script>
+var map = L.map('map').setView([{{ sample.geometry.coordinates.1 }}, {{ sample.geometry.coordinates.0 }}], 17);
+
+// Add tile layer
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19
+}).addTo(map);
+
+const lat = {{ sample.geometry.coordinates.1 }}
+const lon = {{ sample.geometry.coordinates.0 }}
+
+const marker = L.marker([lat, lon]).addTo(map);
+
+
+</script>
+{% endblock content %}
