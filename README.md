@@ -73,10 +73,23 @@ Flask Routes
 
 Clone the repository:
 
-git clone https://github.com/uog-rcaas/Colorimetry.git
+git clone https://github.com/University-of-Glasgow-Public/cupofcarbon
 cd cup-of-carbon
 
+Create and activate a virtual enviroment:
+
 python -m venv .venv
-source .venv/bin/activate
+source .venv/bin/activate# 	   #Linux/macOS
+.venv\Scripts\activate         # Windows
 
 pip install -r requirements.txt
+
+Create a `.env` file in the project root (next to `run.py`). Copy the template and fill in your own values:
+
+    | Variable | How to get it |
+    |---|---|
+    | `SECRET_KEY` | Generate one: `python -c "import secrets; print(secrets.token_hex(32))"` |
+    | `RECAPTCHA_SITE_KEY`, `RECAPTCHA_SECRET_KEY` | Register a site at [google.com/recaptcha/admin](https://www.google.com/recaptcha/admin) (add `localhost` as a domain for local use) |
+    | `RESEND_API_KEY` | Create a key in the [Resend](https://resend.com) dashboard under API Keys |
+
+    Never commit `.env`. It is listed in `.gitignore`.

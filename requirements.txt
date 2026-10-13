@@ -16,3 +16,5 @@ piexif
 flask_bcrypt
 opencv-python-headless
 python-dotenv
+mkdocs
+mkdocs-material

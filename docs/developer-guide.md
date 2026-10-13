@@ -63,17 +63,28 @@ Flask Routes
 ## Run the application locally
 
 The app connects to `mongodb://localhost:27017/colorimetry_db` by default. To
-use a different MongoDB URI, set the `MONGO_URI` environment variable before
+use a different MongoDB URI, set the `MONGO_URI` environment variable (in .env) before
 starting the app.
 
 From the project root, create and activate a virtual environment, then install
 the application requirements:
 
 ```powershell
-py -m venv .venv
-.\.venv\Scripts\Activate.ps1
+python -m venv .venv
+source .venv/bin/activate# 	   #Linux/macOS
+.venv\Scripts\activate         # Windows
 python -m pip install -r requirements.txt
 ```
+
+Create a `.env` file in the project root (next to `run.py`). Copy the template and fill in your own values:
+
+    | Variable | How to get it |
+    |---|---|
+    | `SECRET_KEY` | Generate one: `python -c "import secrets; print(secrets.token_hex(32))"` |
+    | `RECAPTCHA_SITE_KEY`, `RECAPTCHA_SECRET_KEY` | Register a site at [google.com/recaptcha/admin](https://www.google.com/recaptcha/admin) (add `localhost` as a domain for local use) |
+    | `RESEND_API_KEY` | Create a key in the [Resend](https://resend.com) dashboard under API Keys |
+
+Never commit `.env`. It is listed in `.gitignore`.
 
 Start the Flask development server with:
 
