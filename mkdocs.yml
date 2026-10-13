@@ -8,3 +8,5 @@ nav:
   - Home: index.md
   - User guide: user-guide.md
   - Developer guide: developer-guide.md
+
+site_url: https://university-of-glasgow-public.github.io/cupofcarbon/
