@@ -79,10 +79,9 @@ cd cup-of-carbon
 Create and activate a virtual enviroment:
 
 - python -m venv .venv
-- source .venv/bin/activate 	   #Linux/macOS
+- source .venv/bin/activate 	   # Linux/macOS
 - .venv\Scripts\activate         # Windows
-
-pip install -r requirements.txt
+- pip install -r requirements.txt
 
 Create a `.env` file in the project root (next to `run.py`). Copy the template and fill in your own values:
 
