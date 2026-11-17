@@ -12,7 +12,7 @@
               <thead>
                 <tr>
                     <th scope="col">User</th>
-                    <th scope="col">DOC</th>
+                    <th scope="col">DOC (mg/L)</th>
                     <th scope="col">Date</th>
                     <th scope="col">Link</th>
                     {% if current_user.role == "admin" %}
@@ -26,9 +26,9 @@
                     <td>{{ sample.properties.user }}</td>
                     <td>{{ sample.properties.doc }}</td>
                     <td>{{ sample.properties.submission_timestamp.strftime("%Y-%m-%d %H:%M:%S") }}</td>
-                    <td style="text-align: center"><a href="{{ url_for('data.sample', sample_id=sample._id) }}">View</a></td>
+                    <td><a href="{{ url_for('data.sample', sample_id=sample._id) }}">View</a></td>
                     {% if current_user.role == "admin" %}
-                        <td style="text-align: center"><a href="{{ url_for('data.delete', sample_id=sample._id) }}">Delete</a></td>
+                        <td><a href="{{ url_for('data.delete', sample_id=sample._id) }}">Delete</a></td>
                     {% endif %}
                 </tr>
                 {% endfor %}

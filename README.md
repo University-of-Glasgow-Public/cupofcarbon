@@ -71,20 +71,21 @@ Flask Routes
 
 ## Installation
 
-Clone the repository:
+**1** Clone the repository:
 
 git clone https://github.com/University-of-Glasgow-Public/cupofcarbon
 cd cup-of-carbon
 
-Create and activate a virtual enviroment:
+**2** Create and activate a virtual enviroment:
 
 python -m venv .venv
 source .venv/bin/activate# 	   #Linux/macOS
 .venv\Scripts\activate         # Windows
 
+**3** Install the requirements
 pip install -r requirements.txt
 
-Create a `.env` file in the project root (next to `run.py`). Copy the template and fill in your own values:
+**4** Create a `.env` file in the project root (next to `run.py`). Copy the template and fill in your own values:
 
     | Variable | How to get it |
     |---|---|
@@ -93,3 +94,5 @@ Create a `.env` file in the project root (next to `run.py`). Copy the template a
     | `RESEND_API_KEY` | Create a key in the [Resend](https://resend.com) dashboard under API Keys |
 
     Never commit `.env`. It is listed in `.gitignore`.
+
+**5** The first time you run the app, you need to run set_up_development.py to create the database and connect to Mongo. After that, make sure Mongo is started every time you run the app.
